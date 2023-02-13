@@ -1,0 +1,1340 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>GDP Around the World</title>
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="https://d3js.org/topojson.v3.min.js"></script>
+<script src="https://unpkg.com/topojson@3"></script>
+<style>
+    .mapline {
+  stroke: lightslategray;
+  stroke-width: 0.5px;
+  fill: grey;
+}
+hr{
+    display: block;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  margin-left: 20%;
+  margin-right: 20%;
+  border-style: inset;
+  border-width: 1px;
+}
+    .gridlines line {
+            stroke: #bbb;
+        }
+        .gridlines .domain{
+            stroke: none;
+        }
+    #scatterplot-label {
+        width: 800px;
+        min-height: 500px;
+        margin: 0 auto;
+        padding-left: 150px;
+    }
+    #button-bar {
+        width: 800px;
+        margin: 0 auto;
+        padding-left: 150px;
+    }
+    #collisionChart{
+        width: 1250px;
+        min-height: 400px;
+        margin: 0 auto;
+    }
+    #my_dataviz{
+        width: 600px;
+        min-height: 500px;
+        margin: 0 auto;
+    }
+    #DropDownCircle{
+        width: 250px;
+        min-height: 500px;
+        margin: 0 auto;
+    }
+    #collisionButtons{
+      width: 1250px;
+      padding-left: 150px;
+      margin: 0 auto;
+    }
+    #collisionButtons button{
+      display: inline-block;
+      padding: 15px 25px;
+      font-size: 10px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      outline: none;
+      color: rgb(101, 100, 100);
+      background-color: #E8EDE7;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 9px #999;
+      margin-right: 2px;
+    }
+    #collisionButtons button:active{
+      background-color: #E8EDE7;
+      box-shadow: 0 5px #666;
+      transform: translateY(4px);
+    }
+    .h2{
+      text-align: 'center';
+    }
+    #button {
+      display: inline-block;
+      padding: 15px 25px;
+      font-size: 20px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      outline: none;
+      color: rgb(101, 100, 100);
+      background-color: #E8EDE7;
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 9px #999;
+      margin-right: 2px;
+    }
+    #map{
+        width: 1000px;
+        min-height: 500px;
+        margin: 0 auto;
+    }
+    #button:hover {background-color: #E8EDE7}
+
+    #button:active {
+      background-color: #E8EDE7;
+      box-shadow: 0 5px #666;
+      transform: translateY(4px);
+    }
+    h2{
+      text-align: center;
+    }
+h1{
+text-align: center;
+}
+#collisionChart{
+  display: flex;
+  flex-direction: row;
+}
+#collisionLegend{
+  border: 1px solid white;
+}
+#collisionSidebar{
+  display: flex;
+  flex-direction: column;
+}
+#collisionAxisLabel{
+  margin: auto;
+  text-align: center;
+  font-size: 25px;
+  padding: 0px;
+}
+
+</style>
+</head>
+<body>
+<h1>2020 GDP Around the World</h1>
+
+<h4 style="text-align: center; color: grey;">Zhi Lin (zl846), Tianchen Wang (tw537), Czar Carson (ckc65), Rishabh Prakash (rp429)
+</h4>
+
+<hr>
+
+<h2>
+    GDP Per GDP Per Capital Over the World
+</h2>
+<div id="map" style = "margin-bottom: 50px;"></div>
+<h3 style="text-align: center; color: black;">
+  This plot shows the 2020 GDP per capita around the world.
+</h3>
+<br><hr><br>
+<h2>Take a guess.. How many countries we have in the dataset?</h2>
+   <h2 style="text-align: center; color: red;">(Click the button below to reveal the answer)</h2>
+<div id="DropDownCircle">
+    <svg id = "topten" height="300" width="600"></svg>
+    <button id="button" style="margin-top: 30px ;">Click Me!!</button>
+</div>
+<h3 style="text-align: center; color: black;">
+  This plot shows how many countries we have in the dataset.
+</h3>
+<br><hr><br>
+<h2>Exploring the relationship between GDP Per Capital VS Area</h2>
+<div id="scatterplot-label" miniheight="700">
+    <svg id="scatterplot" height="600" width="600">
+    <text id="label" x="300" y="10" text-anchor="end" alignment-baseline="hanging"></text>
+</svg>
+</div>
+<h3 style="text-align: center; color: black;">
+  This plot shows the relationship between GDP per capita and the country's area.
+</h3>
+<br><hr><br>
+<h2>What are the Global Disparities in GDP?</h2>
+<div id= "collisionChart">
+  <svg id = "collisionInteract" width = "1000" height = "400" ></svg>
+  <div id = "collisionSidebar">
+    <svg id = "collisionCountryLabel" width = "200" height = "160"></svg>
+    <svg id = "collisionLegend" width = "120" height = "160" ></svg>
+  </div>
+</div>
+<p id = "collisionAxisLabel">GDP (billions)</p>
+<div id = "collisionButtons"></div>
+<h3 style="text-align: center; color: black;">
+  This chart shows the GDP disparities between countries worldwide and within each continent.
+</h3>
+<br><hr><br>
+<h2>Which are Top Ten Countries For ...?</h2>
+<div id="button-bar"></div>
+<div id="my_dataviz"></div>
+<div id="dataviz_axisZoom"></div>
+<h3 style="text-align: center; color: black;">
+  This bar chart shows what the top 10 countries for each of the categories are.
+</h3>
+<script>
+    const DropDownCircle = async () => {
+d3.csv("GDP2.csv", d3.autoType)
+    .then( (data) => {
+
+    var svg = d3.select("svg#topten")
+    data.forEach( (d, i) => {
+        d['Density'] = Number(d['Density']);
+        d['GDP_Per_Capital'] = Number(d['GDP Per Capital']);
+        });
+    var topData = data.sort(function(a, b) {
+        return d3.descending(+a.GDP_Per_Capital, +b.GDP_Per_Capital);
+        }).slice(0, 10);
+    var list = [data.length, 2020,]
+    topData.forEach( (d, i) => {
+        //list.push(d['Country'])
+    });
+    console.log(list)
+    var coordsX = [52, 156, 260, 364, 468, 572, 676, 780, 884,
+                 990]
+
+    console.log(list)
+    const colorScale = d3.scaleOrdinal()
+            .domain(list)
+            .range(['#036280', '#E8EDE7', '#81BECE', '#378BA4', '#012E4A']);
+    var i =0;
+    var t = d3.interval(function(elapsed) {
+        svg.append("circle")
+        .attr("cx", coordsX[i])
+        .attr("cy", 20)
+        .attr("r", 52)
+        .style("opacity","0")
+
+        svg
+        .transition()
+        .duration(1000)
+        .attr("cy", "245")
+        .attr("fill", colorScale(list[i]))
+
+        svg.append("text")
+        .text(list[i])
+        .style('fill', 'white')
+        .attr("x", coordsX[i])
+        .style("text-anchor", "middle")
+        .attr("y", 20)
+        .transition()
+        .duration(1000)
+        .attr("y", "245")
+        i = i+1
+        if (i ==1) t.stop();
+    }, 200);
+
+    d3.select("#button").on("click", () => {
+        svg.selectAll('text').remove();
+        svg.selectAll('circle').remove();
+
+    var i =0;
+    var t = d3.interval(function(elapsed) {
+        svg.append("circle")
+        .attr("cx", coordsX[i])
+        .attr("cy", 20)
+        .attr("r", 52)
+        .style('opacity',100)
+        .transition()
+        .duration(1000)
+        .attr("cy", "245")
+        .attr("fill", colorScale(list[i]))
+
+        svg.append("text")
+        .text(list[i])
+        .style('fill', 'white')
+        .attr("x", coordsX[i])
+        .style("text-anchor", "middle")
+        .attr("y", 20)
+        .transition()
+        .duration(1000)
+        .attr("y", "245")
+        i = i+1
+        if (i ==1) t.stop();
+    }, 200);
+      });
+})
+
+    }
+    DropDownCircle();
+
+
+//----------------------------------------------------------
+
+
+  const scatterplotlabel = async () => {
+const scatterplotlabel_svg = d3.select("svg#scatterplot");
+  const width = scatterplotlabel_svg.attr("width");
+  const height = scatterplotlabel_svg.attr("height");
+  const margin = {top: 20, right: 10, bottom: 50, left: 70};
+  const chartWidth = width - margin.left - margin.right;
+  const chartHeight = height - margin.top - margin.bottom;
+
+  let annotations = scatterplotlabel_svg.append("g").attr("id","annotations");
+  let chartArea = scatterplotlabel_svg.append("g").attr("id","points")
+                  .attr("transform","translate("+margin.left+","+margin.top+")");
+
+  // Import some CSV data
+  d3.csv("GDP2.csv", d3.autoType)
+    .then( (data) => {
+
+    data.forEach( (d, i) => {
+      d['GDP_Per_Capital'] = Number(d['GDP Per Capital']);
+      d['Area'] = Number(d['Area']);
+    });
+
+  const AreaExtent = d3.extent(data, d => d['Area']);
+  const AreaScale = d3.scaleLinear().domain(AreaExtent).range([0, chartWidth]);
+  const GDP_Per_CapitalExtent = d3.extent(data, d => d['GDP_Per_Capital']);
+  const GDP_Per_CapitalScale = d3.scaleLog().domain(GDP_Per_CapitalExtent).range([chartHeight, 0]);
+  const genreScale = d3.scaleOrdinal()
+    .domain(["Asia", "Africa", "Americas", "Europe","Oceania" ])
+    .range(["#7fc97f","#beaed4","#fdc086","#386cb0","#82071B"]);
+    console.log(AreaExtent)
+
+  // Y axis
+  let leftAxis = d3.axisLeft(GDP_Per_CapitalScale)
+                   .tickFormat(d3.format("$.0s"))
+  let leftGridlines = d3.axisLeft(GDP_Per_CapitalScale)
+                        .tickSize(-chartWidth-10)
+                        .tickFormat("")
+  annotations.append("g")
+    .attr("class", "y axis")
+    .attr("transform","translate("+(margin.left-10)+","+margin.top+")")
+    .call(leftAxis)
+  annotations.append("g")
+    .attr("class", "y gridlines")
+    .attr("transform","translate("+(margin.left-10)+","+margin.top+")")
+    .call(leftGridlines);
+
+  // X axis
+  let bottomAxis = d3.axisBottom(AreaScale)
+                     .tickFormat(d3.format(".2s"));
+  let bottomGridlines = d3.axisBottom(AreaScale)
+                          .tickSize(-chartHeight-10)
+                          .tickFormat("")
+  annotations.append("g")
+    .attr("class", "x axis")
+    .attr("transform","translate("+margin.left+","+(chartHeight+margin.top+10)+")")
+    .call(bottomAxis);
+  annotations.append("g")
+    .attr("class", "x gridlines")
+    .attr("transform","translate("+margin.left+","+(chartHeight+margin.top+10)+")")
+    .call(bottomGridlines);
+    scatterplotlabel_svg.append("text")
+    .attr("x", chartWidth / 2 )
+    .attr("y", chartHeight + margin.bottom+15)
+    .style("text-anchor", "middle")
+    .text("Area");
+    scatterplotlabel_svg.append("text")
+    .attr("text-anchor", "end")
+    .attr("transform", "rotate(-90)")
+    .attr("y", margin.left -58)
+    .attr("x", margin.top -200)
+    .text("GDP Per Capital")
+    let circles = chartArea.selectAll("circle").data(data)
+                         .join("circle")
+                         .attr("cx", d => AreaScale(d['Area']))
+                         .attr("cy", d => GDP_Per_CapitalScale(d['GDP_Per_Capital']+1))
+                         .attr("r", 5)
+                         .style("fill", d => genreScale(d['Region']))
+                         .attr("opacity", 0.8);
+
+   circles.on("mouseover", function() {
+       d3.select(this)
+         .transition().duration(200)
+         .attr("stroke-width",4)
+            .attr("stroke","black")
+            .attr("r", 8)
+            .style("fill", d => genreScale(d['Region']))
+            .style("opacity", 1);
+        d3.select("#scatterplot").selectAll('circle')
+            .style('opacity','.2')
+         let title = d3.select(this).datum()['Country'] + " - " + d3.select(this).datum()['Region'] + " - " + d3.select(this).datum()['Density']
+
+       d3.select("#label")
+         .text(title);
+   });
+
+  circles.on("mouseout", function() {
+    d3.select("#scatterplot").selectAll('circle').style('opacity','.8')
+      d3.select(this)
+        .transition().duration(200)  // to fix the appearance bug from the lecture, add a transition here too
+        .attr("stroke-width",1)      //   it will override the old transition, preventing any values from getting
+        .attr("stroke","none")
+        .attr("r", 5)      //   "stuck" and not reset properly
+        .style("fill", d => genreScale(d['Region']) );
+
+      d3.select("#label")
+        .text("");
+    });
+    var Regiondata = ["Oceania", "Africa", "Europe", "Asia", "Americas"]
+    let legand=scatterplotlabel_svg
+                .append('g')
+                .selectAll('g')
+                .data(Regiondata)
+                .join('g')
+
+        legand.append('rect')
+            .attr('height','15px')
+            .attr('width','20px')
+            .attr('x',width*.75)
+            .attr('y',(d,i)=>height*.05+i*25)
+            .attr('fill',d=>genreScale(d))
+
+        legand.append('text')
+            .attr('x',width*.82)
+            .attr('y',(d,i)=>height*.05+i*25+15)
+            .attr('font-size','.8em')
+            .text(d=>d)
+  });
+  }
+  scatterplotlabel();
+
+
+  // ---------------------------------------------------------------
+  const requestData = async () => {
+
+const data = await d3.csv("GDP2.csv");
+
+data.forEach( (d, i) => {
+  d['gdp'] = Number(d['GDP Per Capital']);
+  d['population'] = Number(d['Population Rank']);
+  d['growth_rate'] = Number(d['Growth Rate'])
+  d['landarea'] = Number(d['Land Area'])
+  d['area'] = Number(d['Area'])
+  d['density'] = Number(d['Density'])
+
+});
+
+// Sort data and choose top  10
+let sortedGDP = data.sort((a, b) => d3.descending(a.gdp, b.gdp)).slice(0, 10)
+let sortedPopulation = data.sort((a, b) => d3.descending(a.population, b.population)).slice(0, 10)
+let sortedGrowth = data.sort((a,b) => d3.descending(a.growth_rate, b.growth_rate)).slice(0, 10)
+let sortedLandArea = data.sort((a,b) => d3.descending(a.landarea, b.landarea)).slice(0, 10)
+let sortedArea = data.sort((a,b) => d3.descending(a.area, b.area)).slice(0, 10)
+let sortedDensity = data.sort((a,b) => d3.descending(a.density, b.density)).slice(0, 10)
+
+
+// set the dimensions and margins of the graph
+const margin = {top: 30, right: 30, bottom: 70, left: 60},
+  width = 800 - margin.left - margin.right,
+  height = 600 - margin.top - margin.bottom;
+
+// append the svg object to the body of the page
+const svg = d3.select("#my_dataviz")
+.append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", height + margin.top + margin.bottom)
+.append("g")
+  .attr("transform", `translate(${margin.left},${margin.top})`);
+
+// Initialize the X axis
+const xScale = d3.scaleBand()
+.range([ 0, width])
+.padding(0.2);
+let bottomAxis = d3.axisBottom();
+let bottomAxisG = svg.append("g")
+.attr("transform", `translate(0,${height})`)
+
+// Initialize the Y axis
+const yScale = d3.scaleLinear()
+.range([ height, 0]);
+let yAxis = d3.axisLeft().tickFormat(d3.format('$'));
+let yAxisG = svg.append("g")
+         .attr("class", "y axis")
+let barColor = d3.scaleOrdinal()
+    .domain(data)
+    .range(d3.schemePaired);
+
+var currButtonBar = "gdp";
+
+// Initialize the plot with the first dataset
+update(sortedGDP, currButtonBar);
+
+let rects = svg.selectAll("rect")
+
+  rects.on("mouseover", function() {
+    d3.selectAll('.times')
+        .attr('opacity', 0)
+    d3.select(this)
+        .transition().duration(00)
+          .attr("width", xScale.bandwidth()+3)
+          .style('opacity', 0.6)
+
+    let x = d3.select(this).datum()["Country"]
+    let y = d3.select(this).datum()[currButtonBar]
+    let line = svg.append('line')
+        .attr('id', 'limit')
+        .attr('x1', 0)
+        .attr('y1', yScale(y))
+        .attr('x2', width)
+        .attr('y2', yScale(y))
+        .style('stroke', 'darkgrey')
+        .style('stroke-width', "1.5")
+        .style('stroke-dasharray', ("5", "3"))
+    let barText = svg.append('text')
+        .attr('id', 'bartext')
+        .attr('x', xScale(x)+30)
+        .attr('y', yScale(y)-7)
+        .attr('text-anchor', 'middle')
+        .text(y)
+        .style('fill', 'black')
+        .attr('opacity', 0.8)
+    });
+
+ rects.on("mouseout", function() {
+   d3.selectAll('.times')
+       .attr('opacity', 1)
+   d3.select(this)
+       .transition()
+       .duration(300)
+        .style('opacity', 1)
+        .attr("width", xScale.bandwidth())
+   svg.selectAll('#limit').remove()
+   svg.selectAll('#bartext').remove()
+
+   });
+
+// A function that create / update the plot for a given variable:
+function update(currData) {
+  // Update the X axis
+  const dataDomain = d3.map(currData, d => d.Country)
+  xScale.domain(dataDomain)
+  bottomAxis.scale(xScale);
+  bottomAxisG.transition()
+             .call(bottomAxis)
+             .selectAll("text")
+                  .style("text-anchor", "end")
+                  .attr("dx", "-.8em")
+                  .attr("dy", ".15em")
+                  .attr("transform", "rotate(-20)");
+  //Update the Y axis
+  let minmaxBar = d3.extent(currData, d => d[currButtonBar]);
+  yScale.domain(d3.extent(data, d => d[currButtonBar]));
+  yAxis.scale(yScale);
+  if (currButtonBar == "area") {
+    yAxis.tickFormat(d3.format('.2s'));
+  } else if (currButtonBar == "landarea") {
+    yAxis.tickFormat(d3.format('.2s'));
+  } else if (currButtonBar == "density") {
+    yAxis.tickFormat(d => d + "k");
+  } else if (currButtonBar == "growth_rate") {
+    yAxis.tickFormat(d3.format('.2%'));
+  } else {yAxis.tickFormat(d3.format('$')); }
+  yAxisG.transition().duration(1000).call(yAxis);
+  // Create the u variable
+  let u = svg.selectAll("rect")
+    .data(currData)
+    .join("rect") // Add a new rect for each new elements
+    .transition()
+    .duration(950)
+      .attr("x", d => xScale(d.Country))
+      .attr("y", d => yScale(d[currButtonBar]))
+      .attr("width", xScale.bandwidth())
+      .attr("height", d => height - yScale(d[currButtonBar]))
+      //.attr("fill", "#036280")
+      .attr("fill", d => barColor(d.Country))
+}
+
+
+d3.select("div#button-bar")
+  .append("button")
+  .attr("id", "button")
+  .text( "gdp" )
+  .on("click", function() {
+    // When it's clicked, call updateBars to update the chart
+    currButtonBar = "gdp";
+    update(sortedGDP);
+  })
+d3.select("div#button-bar")
+  .append("button")
+  .attr("id", "button")
+  .text( "growth rate" )
+  .on("click", function() {
+    // When it's clicked, call updateBars to update the chart
+    currButtonBar = "growth_rate";
+    update(sortedGrowth);
+  })
+d3.select("div#button-bar")
+    .append("button")
+    .attr("id", "button")
+    .text( "density" )
+    .on("click", function() {
+      // When it's clicked, call updateBars to update the chart
+      currButtonBar = "density";
+      update(sortedDensity);
+    })
+d3.select("div#button-bar")
+  .append("button")
+  .attr("id", "button")
+  .text( "land area" )
+  .on("click", function() {
+    // When it's clicked, call updateBars to update the chart
+    currButtonBar = "landarea";
+    update(sortedArea);
+  })
+d3.select("div#button-bar")
+  .append("button")
+  .attr("id", "button")
+  .text( "area" )
+  .on("click", function() {
+    // When it's clicked, call updateBars to update the chart
+    currButtonBar = "area";
+    update(sortedArea);
+  })
+
+
+
+// });
+
+}
+requestData();
+//---------------------------------------------------------------------
+const map = async () => {
+    var width = 960,
+    height = 500;
+
+var projection = d3.geoMercator()
+    .center([0, 5 ])
+    .scale(150)
+    .rotate([-180,0]);
+
+var svg = d3.select("#map").append("svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var path = d3.geoPath()
+    .projection(projection);
+
+var g = svg.append("g");
+
+d3.json("countries-110m.json")
+    .then( (topology) => {
+        d3.csv("GDP2.csv")
+            .then( (data) => {
+                            data.forEach( (d, i) => {
+                d['Density'] = Number(d['Density']);
+                d['GDP_Per_Capital'] = Number(d['GDP Per Capital']);
+                });
+                var newlist = []
+                var list = []
+                data.forEach( (d, i) => {
+                    //list.push(d['Country'])
+                    list.push({
+                        Country: d['Country'],
+                        GDP_Per_Capital: d['GDP_Per_Capital']
+                });
+                });
+                console.log(list)
+                console.log(topology.objects.countries.geometries.length)
+                for (var i = 0; i < list.length; i++) {
+                    for (var j = 0; j < topology.objects.countries.geometries.length; j++) {
+                        if (topology.objects.countries.geometries[j].properties.name == list[i].Country){
+                            newlist.push(Number(topology.objects.countries.geometries[j].id))
+                        }
+                    }
+                    //Do something
+                }
+
+        function checkvalue (d, list) {
+            for (var i = 0; i < list.length; i++) {
+                if (list[i].Country == d.properties.name){
+                    return list[i].GDP_Per_Capital
+                }
+            }
+        }
+    let result_array = [];
+
+        d3.map(list, function(d) {
+            result_array.push(d.GDP_Per_Capital);
+        });
+        let minmax = d3.extent(result_array);
+        const colorScale = d3.scaleQuantile()
+                .domain(result_array)
+                .range(['#E8EDE7', '#81BECE', '#378BA4', '#036280', '#012E4A']);
+            console.log(newlist)
+
+    g.selectAll("path")
+       .data(topojson.feature(topology, topology.objects.countries)
+           .features)
+       .enter().append("path")
+       .attr("class", "mapline")
+       .attr("d", path)
+       .style("fill", function(d){ return newlist.includes(Number(d.id)) ? colorScale(checkvalue(d, list)) : 'darkgrey' });
+    var list_color = colorScale.quantiles()
+
+       let legand=svg
+                .append('g')
+                .selectAll('g')
+                .data(list_color)
+                .join('g')
+
+        legand.append('rect')
+            .attr('height','15px')
+            .attr('width','20px')
+            .attr('x',width*.88)
+            .attr('y',(d,i)=>height*.80+i*25)
+            .attr('fill',d=>colorScale(d))
+
+        legand.append('text')
+            .attr('x',width*.92)
+            .attr('y',(d,i)=>height*.80+i*25+15)
+            .attr('font-size','.8em')
+            .text(d=>d3.format(".1f")(d))
+
+            });
+    });
+
+var zoom = d3.zoom()
+      .scaleExtent([1, 8])
+      .on('zoom', function(event) {
+          g.selectAll('path')
+           .attr('transform', event.transform);
+});
+
+svg.call(zoom);
+}
+map();
+
+//-----------------------------------
+const makeCollisionGraph = async function(){
+  const gdpData = await d3.csv("GDP2.csv");
+  console.log("gdp dataset:", gdpData);
+  const collisionWidth = d3.select("svg#collisionInteract").attr("width");
+  const collisionHeight = d3.select("svg#collisionInteract").attr("height");
+
+  const collisionMargins = {top:10, right:10, bottom:50, left:50};
+  const collisionChartWidth = collisionWidth - collisionMargins.left - collisionMargins.right;
+  const collisionChartHeight = collisionHeight - collisionMargins.top - collisionMargins.bottom;
+
+  const continentColorScale = d3.scaleOrdinal()
+                                .domain(["Oceania", "Africa", "Europe", "Asia", "Americas"])
+                                //.range(["darkturquoise", "olivedrab", "orange", "crimson", "darkslateblue"]);
+                                .range(["#82071B", "#beaed4", "#386cb0", "#7fc97f", "#fdc086"]);
+
+  let collisonChartArea = d3.select("svg#collisionInteract").append('g')
+                            .attr("transform", `translate(${collisionMargins.left},${collisionMargins.top})`);
+
+  let collisionAnnotations = d3.select("svg#collisionInteract").append('g')
+                               .attr("transform", `translate(${collisionMargins.left}, ${collisionHeight - collisionMargins.bottom+10})`)
+                               .attr("id", "collisionAnnotations");
+
+   var imfFilter = true;
+   var unFilter = false;
+   var asiaFilter = false;
+   var africaFilter = false;
+   var europeFilter = false;
+   var americaFilter = false;
+   var oceaniaFilter = false;
+
+   var modifyData = [];
+
+   gdpData.forEach(d => {
+     dict = {};
+     dict["Country"] = d["Country"];
+     dict["Continent"] = d["Region"];
+
+     imf = d["GDP (IMF)"];
+     un = d["GDP (UN)"];
+
+     if(imf.includes("Mn")){
+       buffer = d["GDP (IMF)"].replace('$', '');
+       gdp = (Number(buffer.replace(" Mn", '')))/1000;
+       dict["IMF GDP"] = gdp;
+     }else if(imf.includes("Bn")){
+       buffer = d["GDP (IMF)"].replace('$', '');
+       gdp = Number(buffer.replace(" Bn", ''));
+       dict["IMF GDP"] = gdp;
+     }else if(imf.includes("Tn")){
+       buffer = d["GDP (IMF)"].replace('$', '');
+       gdp = (Number(buffer.replace(" Tn", ''))) * 1000;
+       dict["IMF GDP"] = gdp;
+     }else{
+       dict["IMF GDP"] = 0;
+     }
+
+     if(un.includes("Mn")){
+       buffer = d["GDP (UN)"].replace('$', '');
+       gdp = (Number(buffer.replace(" Mn", '')))/1000;
+       dict["UN GDP"] = gdp;
+     }else if(un.includes("Bn")){
+       buffer = d["GDP (UN)"].replace('$', '');
+       gdp = Number(buffer.replace(" Bn", ''));
+       dict["UN GDP"] = gdp;
+     }else if(un.includes("Tn")){
+       buffer = d["GDP (UN)"].replace('$', '');
+       gdp = (Number(buffer.replace(" Tn", ''))) * 1000;
+       dict["UN GDP"] = gdp;
+     }else{
+       dict["UN GDP"] = 0;
+     }
+     modifyData.push(dict);
+   })
+   console.log("modified data: ", modifyData);
+
+   function createDataset(){
+     let buffer = [];
+     if(asiaFilter){
+       buffer = modifyData.filter((d) => d["Continent"]==="Asia");
+     }else if(africaFilter){
+       buffer = modifyData.filter((d) => d["Continent"]==="Africa");
+     }else if(americaFilter){
+       buffer = modifyData.filter((d) => d["Continent"]==="Americas");
+     }else if(oceaniaFilter){
+       buffer = modifyData.filter((d) => d["Continent"]==="Oceania");
+     }else if(europeFilter){
+       buffer = modifyData.filter((d) => d["Continent"]==="Europe");
+     }else{
+       buffer = modifyData;
+     }
+
+     buffer.forEach(d => {
+       d.x = d3.randomUniform(0, collisionChartWidth)();
+       d.y = d3.randomUniform(0, collisionChartHeight)();
+     })
+
+     return buffer;
+   }
+
+   let collisionData = createDataset();
+   console.log("collison data: ", collisionData);
+
+
+   let datapoints = collisonChartArea.selectAll("circle#countries")
+                                     .data(collisionData)
+                                     .join("circle")
+                                     .attr("id", "countries")
+                                     .attr("r", 4)
+                                     .attr("opacity", 1)
+                                     .attr("cx", d => d['x'])
+                                     .attr("cy", d=> d['y'])
+                                     .attr("fill", d => continentColorScale(d["Continent"]));
+
+   function gdpExtent(){
+     let buffer = [];
+     if(imfFilter){
+       buffer = d3.extent(collisionData, d => d["IMF GDP"])
+     }else{
+       buffer = d3.extent(collisionData, d => d["UN GDP"])
+     }
+     buffer[0] = 0;
+     return buffer;
+   };
+
+   let gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+
+   function gdpScaleFunction(number){
+      let inScale = d3.scaleLinear()
+                      .domain(gdpExtent())
+                      .range([20,collisionChartWidth]);
+      return inScale(number);
+   };
+
+   let collisionBottomAxis = d3.axisBottom(gdpScale)
+                               .tickFormat(d3.format("$,"));
+   function createAxis(){
+     collisionAnnotations.append('g')
+                         .attr("class", "collisionAxis")
+                         .call(collisionBottomAxis);
+   };
+   createAxis();
+
+   function createSimulation(){
+     if(imfFilter){
+       return d3.forceSimulation()
+                .nodes(collisionData)
+                .force("yPos", d3.forceY().strength(0.01).y(collisionChartHeight/2.0))
+                .force("xPos", d3.forceX().strength(0.4).x(d => gdpScaleFunction(d["IMF GDP"])))
+                .force("collision", d3.forceCollide().radius(5).iterations(3))
+                .on("tick", updateAllGDP);
+     }else{
+       return d3.forceSimulation()
+                .nodes(collisionData)
+                .force("yPos", d3.forceY().strength(0.01).y(collisionChartHeight/2.0))
+                .force("xPos", d3.forceX().strength(0.4).x(d => gdpScaleFunction(d["UN GDP"])))
+                .force("collision", d3.forceCollide().radius(5).iterations(3))
+                .on("tick", updateAllGDP);
+     }
+   }
+
+   var collisionSim = createSimulation();
+   collisionSim.stop();
+
+   function updateAllGDP(){
+       datapoints.attr("cx", d => d.x).attr("cy", d => d.y);
+   }
+
+   let buttonBar = d3.select("div#collisionButtons").append("div")
+                     .attr("id", "buttonBar");
+
+   buttonBar.append("button").attr("id", "play").text("Play");
+   // buttonBar.append("button").attr("id", "stop").text("Stop");
+   // buttonBar.append("button").attr("id", "tick").text("Tick");
+   buttonBar.append("button").attr("id", "rand").text("Restart");
+   buttonBar.append("button").attr("id", "imf").text("IMF GDP");
+   buttonBar.append("button").attr("id", "un").text("UN GDP");
+   buttonBar.append("button").attr("id", "asia").text("Filter Asia");
+   buttonBar.append("button").attr("id", "africa").text("Filter Africa");
+   buttonBar.append("button").attr("id", "america").text("Filter Americas");
+   buttonBar.append("button").attr("id", "europe").text("Filter Europe");
+   buttonBar.append("button").attr("id", "oceania").text("Filter Oceania");
+   buttonBar.append("button").attr("id", "reset").text("Reset Filter");
+
+
+   d3.select("#play").on("click", () => {
+     console.log("playclicked");
+     collisionSim.restart();
+   });
+   // d3.select("#stop").on("click", () => {
+   //   collisionSim.stop();
+   // });
+   // d3.select("#tick").on("click", () => {
+   //   collisionSim.tick();
+   //   updateAllGDP();
+   // });
+   d3.select("#rand").on("click", () => {
+     collisionSim.restart();
+     collisionSim.stop();
+     collisionSim.alpha(1);
+     collisionData.forEach(d => {
+       d.x = d3.randomUniform(0, collisionChartWidth)();
+       d.y = d3.randomUniform(0, collisionChartHeight)();
+     })
+     updateAllGDP();
+   });
+   d3.select("#imf").on("click", () => {
+     if(unFilter){
+       imfFilter = true;
+       unFilter = false;
+
+       gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+       console.log(imfFilter)
+     }
+   });
+   d3.select("#un").on("click", () => {
+     if(imfFilter){
+       imfFilter = false;
+       unFilter = true;
+
+       gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+     }
+   });
+   d3.select("#asia").on("click", () => {
+     if(!asiaFilter){
+       asiaFilter = true;
+       africaFilter = false;
+       europeFilter = false;
+       americaFilter = false;
+       oceaniaFilter = false;
+
+       datapoints.remove("circle#countries");
+
+       collisionData = createDataset();
+       console.log("new collsion ", collisionData, gdpExtent());
+
+       datapoints = collisonChartArea.selectAll("circle#countries")
+                                         .data(collisionData)
+                                         .join("circle")
+                                         .attr("id", "countries")
+                                         .attr("r", 4)
+                                         .attr("opacity", 1)
+                                         .attr("cx", d => d['x'])
+                                         .attr("cy", d=> d['y'])
+                                         .attr("fill", d => continentColorScale(d["Continent"]));
+
+
+       //gdpScale = d3.scaleLinear()
+       //             .domain(gdpExtent())
+       //             .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim = createSimulation();
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+       hover();
+     }
+   });
+
+   d3.select("#africa").on("click", () => {
+     if(!africaFilter){
+       asiaFilter = false;
+       africaFilter = true;
+       europeFilter = false;
+       americaFilter = false;
+       oceaniaFilter = false;
+
+       datapoints.remove("circle#countries");
+
+       collisionData = createDataset();
+       console.log("new collsion ", collisionData, gdpExtent());
+
+       datapoints = collisonChartArea.selectAll("circle#countries")
+                                         .data(collisionData)
+                                         .join("circle")
+                                         .attr("id", "countries")
+                                         .attr("r", 4)
+                                         .attr("opacity", 1)
+                                         .attr("cx", d => d['x'])
+                                         .attr("cy", d=> d['y'])
+                                         .attr("fill", d => continentColorScale(d["Continent"]));
+
+
+       gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim = createSimulation();
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+       hover();
+     }
+   });
+
+   d3.select("#america").on("click", () => {
+     if(!americaFilter){
+       asiaFilter = false;
+       africaFilter = false;
+       europeFilter = false;
+       americaFilter = true;
+       oceaniaFilter = false;
+
+       datapoints.remove("circle#countries");
+
+       collisionData = createDataset();
+       console.log("new collsion ", collisionData, gdpExtent());
+
+       datapoints = collisonChartArea.selectAll("circle#countries")
+                                         .data(collisionData)
+                                         .join("circle")
+                                         .attr("id", "countries")
+                                         .attr("r", 4)
+                                         .attr("opacity", 1)
+                                         .attr("cx", d => d['x'])
+                                         .attr("cy", d=> d['y'])
+                                         .attr("fill", d => continentColorScale(d["Continent"]));
+
+
+       gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim = createSimulation();
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+       hover();
+     }
+   });
+
+   d3.select("#europe").on("click", () => {
+     if(!europeFilter){
+       asiaFilter = false;
+       africaFilter = false;
+       europeFilter = true;
+       americaFilter = false;
+       oceaniaFilter = false;
+
+       datapoints.remove("circle#countries");
+
+       collisionData = createDataset();
+       console.log("new collsion ", collisionData, gdpExtent());
+
+       datapoints = collisonChartArea.selectAll("circle#countries")
+                                         .data(collisionData)
+                                         .join("circle")
+                                         .attr("id", "countries")
+                                         .attr("r", 4)
+                                         .attr("opacity", 1)
+                                         .attr("cx", d => d['x'])
+                                         .attr("cy", d=> d['y'])
+                                         .attr("fill", d => continentColorScale(d["Continent"]));
+
+
+       gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim = createSimulation();
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+       hover();
+     }
+   });
+
+   d3.select("#oceania").on("click", () => {
+     if(!oceaniaFilter){
+       asiaFilter = false;
+       africaFilter = false;
+       europeFilter = false;
+       americaFilter = false;
+       oceaniaFilter = true;
+
+       datapoints.remove("circle#countries");
+
+       collisionData = createDataset();
+       console.log("new collsion ", collisionData, gdpExtent());
+
+       datapoints = collisonChartArea.selectAll("circle#countries")
+                                         .data(collisionData)
+                                         .join("circle")
+                                         .attr("id", "countries")
+                                         .attr("r", 4)
+                                         .attr("opacity", 1)
+                                         .attr("cx", d => d['x'])
+                                         .attr("cy", d=> d['y'])
+                                         .attr("fill", d => continentColorScale(d["Continent"]));
+
+
+       gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim = createSimulation();
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+       hover();
+     }
+   });
+   d3.select("#reset").on("click", () => {
+       asiaFilter = false;
+       africaFilter = false;
+       europeFilter = false;
+       americaFilter = false;
+       oceaniaFilter = false;
+
+       datapoints.remove("circle#countries");
+
+       collisionData = createDataset();
+       console.log("new collsion ", collisionData, gdpExtent());
+
+       datapoints = collisonChartArea.selectAll("circle#countries")
+                                         .data(collisionData)
+                                         .join("circle")
+                                         .attr("id", "countries")
+                                         .attr("r", 4)
+                                         .attr("opacity", 1)
+                                         .attr("cx", d => d['x'])
+                                         .attr("cy", d=> d['y'])
+                                         .attr("fill", d => continentColorScale(d["Continent"]));
+
+
+       gdpScale = d3.scaleLinear()
+                    .domain(gdpExtent())
+                    .range([20,collisionChartWidth]);
+       collisionBottomAxis.scale(gdpScale);
+       collisionAnnotations.transition().call(collisionBottomAxis);
+
+       collisionSim = createSimulation();
+
+       collisionSim.restart();
+       collisionSim.alpha(1);
+       updateAllGDP();
+       hover();
+
+   });
+
+    d3.select("svg#collisionLegend").append("text")
+                   .attr("x", 1)
+                   .attr("y", 15)
+                   .attr("font-size", "20px")
+                   .text("Countries");
+
+    d3.select("svg#collisionLegend").append("rect")
+          .attr("width",20)
+          .attr("height",20)
+          .attr("x",1)
+          .attr("y",30)
+          .attr("fill", "#7fc97f");
+
+    d3.select("svg#collisionLegend").append("text")
+                   .attr("x", 26)
+                   .attr("y", 45)
+                   .attr("font-size", "20px")
+                   .text("Asia");
+
+    d3.select("svg#collisionLegend").append("rect")
+          .attr("width",20)
+          .attr("height",20)
+          .attr("x",1)
+          .attr("y",55)
+          .attr("fill", "#beaed4");
+
+    d3.select("svg#collisionLegend").append("text")
+                   .attr("x", 26)
+                   .attr("y", 70)
+                   .attr("font-size", "20px")
+                   .text("Africa");
+
+    d3.select("svg#collisionLegend").append("rect")
+          .attr("width",20)
+          .attr("height",20)
+          .attr("x",1)
+          .attr("y",80)
+          .attr("fill", "#fdc086");
+
+    d3.select("svg#collisionLegend").append("text")
+                   .attr("x", 26)
+                   .attr("y", 95)
+                   .attr("font-size", "20px")
+                   .text("Americas");
+
+    d3.select("svg#collisionLegend").append("rect")
+          .attr("width",20)
+          .attr("height",20)
+          .attr("x",1)
+          .attr("y",105)
+          .attr("fill", "#386cb0");
+
+    d3.select("svg#collisionLegend").append("text")
+                   .attr("x", 26)
+                   .attr("y", 120)
+                   .attr("font-size", "20px")
+                   .text("Europe");
+
+    d3.select("svg#collisionLegend").append("rect")
+          .attr("width",20)
+          .attr("height",20)
+          .attr("x",1)
+          .attr("y",130)
+          .attr("fill", "#82071B");
+
+    d3.select("svg#collisionLegend").append("text")
+                   .attr("x", 26)
+                   .attr("y", 145)
+                   .attr("font-size", "20px")
+                   .text("Oceania");
+
+    function getData(){
+      return datapoints
+    }
+
+    let labelCountry = d3.select("svg#collisionCountryLabel").append("text")
+                  .attr("x", 1)
+                  .attr("y", 15)
+                  .attr("font-size", "20px")
+                  .text("Country: ");
+
+    let labelUN = d3.select("svg#collisionCountryLabel").append("text")
+                  .attr("x", 1)
+                  .attr("y", 45)
+                  .attr("font-size", "20px")
+                  .text("GDP (UN): ");
+
+    let labelIMF = d3.select("svg#collisionCountryLabel").append("text")
+                  .attr("x", 1)
+                  .attr("y", 75)
+                  .attr("font-size", "20px")
+                  .text("GDP (IMF): ");
+
+    function hover(){
+      datapoints.on("mouseover", function(){
+          d3.select(this).attr("r", 6).attr("opacity", 1);
+          let name = d3.select(this).datum()["Country"];
+          console.log(name);
+          console.log("mousy");
+          labelCountry.text(String("Country: " + name));
+
+          if(String(d3.select(this).datum()["IMF GDP"]).startsWith("0.")){
+            imf = String(d3.select(this).datum()["IMF GDP"] * 1000) + " Mn";
+            console.log("millions", imf);
+            labelIMF.text(String("GDP (IMF): $" + imf));
+          }else if(String(d3.select(this).datum()["IMF GDP"]).includes(".")){
+            imf = String(d3.select(this).datum()["IMF GDP"]) + " Bn";
+            console.log("billions", imf);
+            labelIMF.text(String("GDP (IMF): $" + imf));
+          }else if(String(d3.select(this).datum()["IMF GDP"]) === "0"){
+            labelIMF.text(String("GDP (IMF): N/A"));
+          }else{
+            imf = String(d3.select(this).datum()["IMF GDP"]/1000) + " Tr";
+            console.log("trillions", imf);
+            labelIMF.text(String("GDP (IMF): $" + imf));
+          }
+
+          if(String(d3.select(this).datum()["UN GDP"]).startsWith("0.")){
+            un = String(d3.select(this).datum()["UN GDP"] * 1000) + " Mn";
+            console.log("millions", un);
+            labelUN.text(String("GDP (UN): $" + un));
+          }else if(String(d3.select(this).datum()["UN GDP"]).includes(".")){
+            un = String(d3.select(this).datum()["UN GDP"]) + " Bn";
+            console.log("billions", un);
+            labelUN.text(String("GDP (UN): $" + un));
+          }else if(String(d3.select(this).datum()["UN GDP"]) === "0"){
+            labelUN.text(String("GDP (UN): N/A"));
+          }else{
+            un = String(d3.select(this).datum()["UN GDP"]/1000) + " Tr";
+            console.log("trillions", un);
+            labelUN.text(String("GDP (UN): $" + un));
+          }
+      })
+
+      datapoints.on("mouseout", function(){
+          d3.select(this).attr("r", 4).attr("opacity", 1);
+          labelCountry.text("Country: ");
+          labelIMF.text("GDP (IMF): ");
+          labelUN.text("GDP (UN): ");
+      })
+  };
+  hover();
+};
+makeCollisionGraph();
+
+</script>
+</body>
+</html>
